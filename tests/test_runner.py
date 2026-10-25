@@ -55,7 +55,9 @@ def test_metric_direction(workspace, configure, direction, expected):
         evaluation_id="test-v1",
         tasks=[task("low", 1), task("high", 2)],
     )
-    assert run(workspace)["best"]["task_id"] == expected
+    result = run(workspace)
+    assert result["ok"], result
+    assert result["best"]["task_id"] == expected
 
 
 @pytest.mark.parametrize(
@@ -105,7 +107,7 @@ def test_retry_requires_explicit_request_and_retains_failure(workspace, configur
     assert run(workspace)["executed"] == 0
     (workspace / "ready").touch()
     result = run(workspace, retry_task="trial")
-    assert result["ok"]
+    assert result["ok"], result
     assert result["attempts"] == 2
     assert result["history"][0]["state"] == "failed"
     assert result["history"][1]["attempt"] == 2
@@ -196,3 +198,22 @@ def test_provenance_contains_code_hash_not_environment(workspace):
     assert payload["input_files"][0]["path"] == "experiment.py"
     assert len(payload["input_files"][0]["sha256"]) == 64
     assert "environment" not in payload
+
+
+def test_nonfile_argv_does_not_fail_optional_provenance(workspace, configure, monkeypatch):
+    from evidence_loop import runner
+
+    original = runner.contained
+
+    def reject_inline_path(root, relative):
+        if relative.startswith("import os,json;"):
+            raise OSError("Invalid filename on this platform")
+        return original(root, relative)
+
+    configure(
+        metric={"name": "score", "direction": "maximize"},
+        evaluation_id="test-v1",
+        tasks=[task()],
+    )
+    monkeypatch.setattr(runner, "contained", reject_inline_path)
+    assert run(workspace)["ok"]

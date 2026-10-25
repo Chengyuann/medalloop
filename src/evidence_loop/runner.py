@@ -174,7 +174,8 @@ def run(root: Path, step_limit: int | None = None, retry_task: str | None = None
                             path = contained(root, arg)
                             if path.is_file():
                                 inputs.append({"path": arg, "sha256": digest(path)})
-                        except LoopError:
+                        except (LoopError, OSError, ValueError):
+                            # An argv item may be inline code, not a valid host filesystem path.
                             continue
                     (run_dir / "provenance.json").write_text(
                         json.dumps(

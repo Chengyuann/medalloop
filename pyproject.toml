@@ -3,15 +3,15 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "evidence-loop"
-version = "0.1.0"
-description = "A local, evidence-first experiment loop for coding agents and researchers."
+name = "medalloop"
+version = "0.2.0"
+description = "An agent iteration framework for machine-learning competitions."
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{name = "Chengyuan Ma"}]
-keywords = ["agents", "experiments", "reproducibility", "machine-learning", "evaluation"]
+keywords = ["agents", "competitions", "kaggle", "machine-learning", "ensembling"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",
@@ -25,18 +25,19 @@ dependencies = []
 dev = ["pytest>=8,<9", "pytest-cov>=5,<7", "ruff>=0.9,<1", "build>=1,<2"]
 
 [project.scripts]
-evidence-loop = "evidence_loop.cli:main"
+medalloop = "medalloop.cli:main"
+evidence-loop = "medalloop.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/Chengyuann/evidence-loop"
-Repository = "https://github.com/Chengyuann/evidence-loop"
-Issues = "https://github.com/Chengyuann/evidence-loop/issues"
+Homepage = "https://github.com/Chengyuann/medalloop"
+Repository = "https://github.com/Chengyuann/medalloop"
+Issues = "https://github.com/Chengyuann/medalloop/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-evidence_loop = ["templates/*.json", "templates/*.py", "templates/*.md", "templates/.gitignore"]
+medalloop = ["templates/*.json", "templates/*.py", "templates/*.md", "templates/.gitignore"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

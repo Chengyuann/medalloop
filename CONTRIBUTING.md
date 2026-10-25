@@ -1,8 +1,12 @@
 # Contributing
 
-Evidence Loop is intentionally a small execution and evidence layer. Proposals
-should improve verifiable behavior without requiring a model provider, cloud
-account or heavyweight runtime dependency.
+MedalLoop is an Agent iteration framework for machine-learning competitions.
+Contributions should improve the actual competition workflow: validation,
+controlled experiments, error analysis, campaign memory, OOF analysis, ensembles,
+submission checks and reproducible final solutions.
+
+Keep the deterministic runner lightweight. Optional model or platform integrations
+should not force every user to install a provider SDK or sign up for a cloud service.
 
 ## Local Setup
 

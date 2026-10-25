@@ -2,8 +2,8 @@ import json
 
 import pytest
 
-from evidence_loop.cli import initialize, main
-from evidence_loop.config import LoopError
+from medalloop.cli import initialize, main
+from medalloop.config import LoopError
 
 
 def test_no_execution_without_consent(workspace, capsys):
@@ -35,3 +35,27 @@ def test_cli_demo_report(workspace, capsys):
 
 def test_no_evidence_is_not_pass(workspace):
     assert main(["verify", "--root", str(workspace)]) == 1
+
+
+def test_competition_scaffold(tmp_path, capsys):
+    root = tmp_path / "competition"
+    assert main(["init", str(root), "--competition"]) == 0
+    result = json.loads(capsys.readouterr().out)
+    assert result["mode"] == "competition"
+    assert (root / "COMPETITION.md").is_file()
+    assert (root / "memory/STATE.md").is_file()
+    assert (root / "memory/HYPOTHESES.md").is_file()
+    assert (root / "memory/RESULTS.md").is_file()
+    assert (root / "rounds/001/loop.json").is_file()
+    assert not (root / "rounds/001/train.py").exists()
+    assert "not a trained solution" in (root / "rounds/001/README.md").read_text()
+    assert "## 6. Ensemble and Submit" in (root / "AGENTS.md").read_text()
+    assert "MEDALLOOP_RUN_DIR" in (root / "AGENTS.md").read_text()
+    assert main(["plan", "--root", str(root / "rounds/001")]) == 0
+    assert not (root / "rounds/001/ledger.sqlite3").exists()
+
+
+def test_competition_init_preserves_existing_directory(workspace):
+    with pytest.raises(LoopError):
+        initialize(workspace, competition=True)
+    assert (workspace / "experiment.py").is_file()

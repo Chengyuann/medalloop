@@ -1,134 +1,174 @@
 <p align="center">
-  <img src="docs/assets/cover.webp" alt="Evidence Loop：让实验结论有据可查。" width="900">
+  <img src="docs/assets/medalloop-cover.webp" alt="MedalLoop：机器学习竞赛 Agent 迭代框架" width="960">
 </p>
 
-# Evidence Loop
+# MedalLoop
 
-**为代码 Agent 和研究者提供可执行、可核验、可恢复的本地实验闭环。**
+**面向机器学习竞赛提分的 Agent 迭代框架。**
 
-[English](README.md) · [架构](docs/architecture.md) ·
+[English](README.md) · [竞赛工作流](docs/competition-workflow.md) ·
 [配置说明](docs/configuration.md) · [贡献指南](CONTRIBUTING.md)
 
-提出假设不等于得到结果，程序正常结束也不等于实验有效。
-Evidence Loop 把实验流程变成一组明确动作：
+MedalLoop 用来让代码 Agent 持续推进一场机器学习竞赛：
 
-```text
-提出假设 → 执行命令 → 校验指标与产物 → 留存证据 → 保留或拒绝 → 继续或停止
-```
+<img src="docs/assets/workflow.png" alt="竞赛迭代流程：理解赛题、实验、评估、融合提交，再更新记忆并选择下一项假设。" width="960">
 
-它不是一个内置大模型的自主科研系统，而是可以由人或任意代码 Agent
-调用的确定性执行工具。默认不联网，不需要 API Key，不依赖 GPU，
-运行时没有第三方 Python 依赖。
+它解决的不是“如何让 Agent 一次写出一个模型”，而是如何让 Agent
+在数天或数周的竞赛过程中，记住当前最佳方案，控制变量地做实验，
+保留失败经验，管理 CV 与榜单反馈，并在没有收益时及时换方向。
 
-> 当前为早期版本 v0.1.0。演示使用合成数据，用于验证工作流，
-> 不代表真实任务上的效果提升或竞赛成绩。
+> MedalLoop 仅用于遵守比赛规则的算法研究。它不会访问隐藏标签、
+> 绕过平台规则、伪造榜单成绩，也无法保证获奖或提分。
 
 ## 快速开始
 
-需要 Python 3.9 或更新版本。目前从仓库安装，尚未发布到 PyPI。
+需要 Python 3.9 或更新版本：
 
 ```bash
-git clone https://github.com/Chengyuann/evidence-loop.git
-cd evidence-loop
+git clone https://github.com/Chengyuann/medalloop.git
+cd medalloop
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install .
 
-evidence-loop init workspaces/demo
-evidence-loop plan --root workspaces/demo
-evidence-loop run --root workspaces/demo --execute
-evidence-loop report --root workspaces/demo
-evidence-loop verify --root workspaces/demo
+medalloop init my-competition --competition
+cd my-competition
 ```
 
 Windows PowerShell 使用 `.venv\Scripts\Activate.ps1` 激活环境。
-也可以用 `python -m evidence_loop` 调用相同命令。
+当前从仓库安装，尚未发布到 PyPI。
 
-**先看 plan，再决定是否执行。** `--execute` 表示信任这些本地命令；
-程序不是沙箱，子进程具有当前用户的权限和环境变量。
+初始化后会生成：
 
-## 演示会发生什么
+```text
+my-competition/
+├── AGENTS.md                 # 竞赛 Agent 完整操作流程
+├── COMPETITION.md            # 赛题、规则、指标、数据和预算
+├── memory/
+│   ├── STATE.md              # 当前最佳方案、活跃轮次、下一步
+│   ├── HYPOTHESES.md         # 提分假设池
+│   └── RESULTS.md            # CV 结论和官方提交记录
+└── rounds/
+    └── 001/
+        ├── README.md         # 首轮待完成事项
+        └── loop.json         # 基线实验计划
+```
 
-<img src="docs/assets/demo.png" alt="实际离线演示：建立基线、保留线性模型、拒绝偏移与重复实验，然后停止。" width="900">
+把 `AGENTS.md` 交给 Codex、Claude Code、Cursor 或其他代码 Agent。
+先补全 `COMPETITION.md`，让 Agent 阅读规则和数据、选择合理 CV、
+实现 `rounds/001/train.py`，再审查并执行：
 
-1. 用训练集均值建立基线。
-2. 拟合线性模型，在同一合成留出集上评估。
-3. 测试固定截距偏移。
-4. 重复固定随机种子的线性实验。
-5. 连续两次没有改善后停止，剩余任务不会执行。
+```bash
+medalloop plan --root rounds/001
+medalloop run --root rounds/001 --steps 1 --execute
+medalloop report --root rounds/001
+medalloop verify --root rounds/001
+```
 
-再次执行同一 workspace，不会重复已完成的任务。
-退出或重启不会清空实验记录与停止状态。
+`--execute` 表示你已审查本地命令。训练代码会继承当前用户权限，
+MedalLoop 不是安全沙箱。
 
-## 主要改进
+## 一轮竞赛迭代包含什么
 
-| 问题 | 实现 |
-| --- | --- |
-| Loop 只输出建议 | 实际运行 argv 命令并管理超时。 |
-| 失败记录不完整 | SQLite 保存每次尝试、状态、原因和结果。 |
-| 重启后重复运行 | 按任务与尝试编号恢复，失败需要显式 retry。 |
-| 分数比较不严谨 | 固定指标名、方向和评估协议，仅比较校验通过的结果。 |
-| 程序结束就算成功 | 区分运行成功、结果保留、结果拒绝。 |
-| 配置形同虚设 | 实际执行次数、总耗时、连续失败与无改善停止条件。 |
-| 文件存在但无法追溯 | 保存文件大小、SHA-256、命令与 Python 版本。 |
-| CSV 错位或静默补值 | 严格校验表头、行宽、ID 集合、顺序和数值。 |
-| 并列排名处理错误 | Rank blending 使用并列平均排名。 |
+### 1. 先把本地评测做可信
 
-## 接入自己的实验
+Agent 先确认官方指标、方向、提交格式、数据结构和比赛规则，
+再根据分组、时间、类别分布等信息选择 Stratified、Group、Time
+或其他合理切分。基线必须能够输出固定 folds、OOF、测试集预测、
+配置、指标和合法 submission。
 
-在第一次执行前修改 workspace 下的 `loop.json` 与实验脚本。
-每个任务写清假设、命令、指标文件和产物列表。
+### 2. 从证据中选下一项实验
 
-脚本从环境变量 `EVIDENCE_LOOP_RUN_DIR` 获取本次输出目录，
-并写入以下格式的 `metrics.json`：
+Agent 会结合公开方案调研、错误切片、折间波动、历史失败和算力预算，
+维护一个提分假设池。每个任务只保留一个主要变量，例如：
+
+- 数据清理和特征工程；
+- 表征、模型家族、损失函数；
+- 采样、增强、训练策略、参数调整；
+- 推理策略和互补模型融合。
+
+不是所有比赛都需要所有方向。优先做有证据、有信息增益的实验。
+
+### 3. 实际执行并判断是否保留
+
+每个任务声明假设、训练命令、指标文件和必要产物：
 
 ```json
 {
-  "metric": {"name": "mse", "value": 0.25},
-  "evaluation_id": "my-fixed-dataset-split-v1"
+  "id": "text_features_v2",
+  "hypothesis": "字符特征改善稀有类别样本。",
+  "command": ["{python}", "train.py", "--config", "text_features_v2.json"],
+  "metrics": "metrics.json",
+  "artifacts": ["oof.csv", "submission.csv", "config.json"]
 }
 ```
 
-指标名与 `evaluation_id` 必须与配置一致，分数必须是有限数值。
-原始日志、指标、预测文件及哈希记录都保留在本地。
-配置开始运行后被锁定，新一轮方案使用新的 workspace。
+训练脚本把结果写入 `MEDALLOOP_RUN_DIR`。MedalLoop 检查指标名、
+评估协议、文件是否齐全，保存日志和哈希，并按 maximize/minimize
+方向与当前结果比较。程序正常结束但没有提分，也会被明确标记为拒绝。
 
-常用命令：
+### 4. 失败也要产生信息
 
-```bash
-evidence-loop run --root workspaces/demo --steps 1 --execute
-evidence-loop status --root workspaces/demo
-evidence-loop check-submission submission.csv --id-column row_id --sample sample.csv
-evidence-loop blend a.csv b.csv --id-column row_id --output blend.csv
-```
+失败需要区分：
 
-对于实际失败的任务，使用 `retry TASK_ID --root WORKSPACE --execute`。
-重试会新增一次尝试，旧失败不会被删除，也不会重置总预算。
+- 数据或实现错误；
+- 指标或切分错误；
+- 超时、显存、内存等资源问题；
+- 算法假设本身没有收益。
 
-## 边界
+CV 提升需要查看各折和关键错误切片；CV 与榜单方向不一致时，
+优先排查切分、分布偏移和 public LB 过拟合，而不是直接相信较高分数。
 
-- 不自动生成研究方案，不内置模型服务，也不自动提交竞赛结果。
-- 文件哈希只能检测相对本地记录的变化，不是不可篡改的证明。
-- 指标格式正确不代表指标实现正确；泄漏、切分、显著性与数据权限需要单独审查。
-- `evaluation_id` 是协议约定，不会自动检测底层数据是否被更换。
-- 不提供网络隔离、GPU 限额、Token 计费或分布式调度。
-- 不能捕获的进程终止可能遗留子进程，恢复前应检查运行状态。
-- 本地 workspace 可能含隐私，不应直接作为公开资料上传。
+### 5. 用 OOF 做互补性融合
 
-## 开发与贡献
+融合前应保证 OOF 行、fold 和评估协议一致。不同模型名字不代表真的互补。
 
 ```bash
-python -m pip install -e ".[dev]"
-python -m pytest --cov=evidence_loop
-ruff check .
-ruff format --check .
-python -m build
+medalloop blend predictions/a.csv predictions/b.csv \
+  --id-column row_id --weight 0.25 --output submissions/blend.csv
 ```
 
-欢迎最小可复现问题、失败案例和小范围改进。请只提交合成测试数据，
-不要附带真实数据、内部链接、凭证、个人路径或未脱敏日志。
+支持 mean 与 rank blending。Rank 结果不一定是校准概率，是否适合需要结合指标判断。
 
-## 许可
+### 6. 提交前检查并记录榜单反馈
 
-MIT。维护者：Chengyuan Ma。封面使用 GPT Image 2 生成；
-演示图来自实际合成实验记录。详情见 [素材说明](docs/assets/README.md)。
+```bash
+medalloop check-submission submissions/blend.csv \
+  --id-column row_id --sample data/sample_submission.csv
+```
+
+工具会检查表头、行宽、ID、顺序、空值、非有限数值和常数预测。
+它不会自动上传。由 Agent 或操作者显式提交后，将官方分数、文件哈希、
+来源实验和回执记录到 `memory/RESULTS.md`。
+
+### 7. 开启下一轮
+
+当实验计划或评估协议发生变化时，新建 `rounds/002`。上一轮最佳方案
+需要作为新一轮的第一项重新评估，不能在不同协议之间直接比较。
+连续没有改善时，应该分析错误或调研新的方向，而不是静默扩大预算。
+
+## 两层结构
+
+```text
+竞赛 Agent 层
+  规则 / 调研 / 假设 / 编码 / 错误分析 / 融合 / 下一轮决策
+                              ↓
+确定性实验执行层
+  训练命令 / 指标校验 / 实验记录 / 恢复重试 / 停止条件 / 提交检查
+```
+
+项目不绑定任何大模型供应商。Agent 负责竞赛研究和写代码，
+底层执行器使用 Python 标准库，运行时零第三方依赖。
+
+## 能力范围
+
+竞赛研究、模型实现、记忆更新和榜单复盘由外部代码 Agent 按指令完成；
+CLI 负责一轮内的执行、结果检查和记录。提交上传和资源支出需要明确授权。
+
+请遵守比赛的数据与模型使用规则。验证切分、泄漏审查和算法质量仍需
+结合具体赛题判断，框架不保证奖牌或线上提分。
+
+## 兼容与许可
+
+v0.2 保留 `evidence-loop` 命令作为兼容别名，新项目使用 `medalloop`。
+MIT License，维护者 Chengyuan Ma。

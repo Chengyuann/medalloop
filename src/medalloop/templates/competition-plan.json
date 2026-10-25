@@ -1,0 +1,22 @@
+{
+  "name": "Round 001: establish the competition baseline",
+  "metric": {"name": "replace_with_official_metric", "direction": "maximize"},
+  "evaluation_id": "replace_with_dataset_split_and_metric_version",
+  "budget": {
+    "max_steps": 6,
+    "max_failures": 2,
+    "patience": 3,
+    "min_delta": 0,
+    "timeout": 600,
+    "max_wall_seconds": 1800
+  },
+  "tasks": [
+    {
+      "id": "baseline",
+      "hypothesis": "Establish a reproducible baseline on the agreed validation protocol.",
+      "command": ["{python}", "train.py", "--config", "baseline.json"],
+      "metrics": "metrics.json",
+      "artifacts": ["oof.csv", "submission.csv", "config.json"]
+    }
+  ]
+}

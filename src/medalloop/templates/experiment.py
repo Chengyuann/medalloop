@@ -22,7 +22,7 @@ predictions = [
     for x, _ in holdout
 ]
 mse = mean((prediction - target) ** 2 for prediction, (_, target) in zip(predictions, holdout))
-output = Path(os.environ["EVIDENCE_LOOP_RUN_DIR"])
+output = Path(os.environ["MEDALLOOP_RUN_DIR"])
 (output / "metrics.json").write_text(
     json.dumps(
         {

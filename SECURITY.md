@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-Security fixes target the latest 0.1.x release. This is an early-stage local tool,
+Security fixes target the latest 0.2.x release. This is an early-stage local tool,
 not a security isolation product.
 
 ## Trust Model
@@ -30,7 +30,7 @@ not be committed or attached to an issue without review.
 ## Private Reports
 
 Use GitHub's private vulnerability reporting form:
-https://github.com/Chengyuann/evidence-loop/security/advisories/new
+https://github.com/Chengyuann/medalloop/security/advisories/new
 
 Do not publish credentials, exploit output containing private data, or live
 internal endpoints. Include the affected version and a minimal synthetic

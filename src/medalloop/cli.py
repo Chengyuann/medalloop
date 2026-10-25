@@ -14,29 +14,62 @@ from .runner import audit_evidence, run, status
 from .submission import blend, check_submission
 
 
-def initialize(root: Path) -> dict:
+def initialize(root: Path, competition: bool = False) -> dict:
     if root.exists():
         raise LoopError("destination already exists; choose a new workspace")
     root.mkdir(parents=True)
     try:
-        templates = resources.files("evidence_loop").joinpath("templates")
-        for name in ("loop.json", "experiment.py", "AGENTS.md", ".gitignore"):
-            source = templates.joinpath(name)
-            (root / name).write_bytes(source.read_bytes())
+        templates = resources.files("medalloop").joinpath("templates")
+        if competition:
+            files = {
+                "competition-agent.md": "AGENTS.md",
+                "competition-brief.md": "COMPETITION.md",
+                "competition-state.md": "memory/STATE.md",
+                "competition-ideas.md": "memory/HYPOTHESES.md",
+                "competition-results.md": "memory/RESULTS.md",
+                "competition-plan.json": "rounds/001/loop.json",
+                "competition-round.md": "rounds/001/README.md",
+                ".gitignore": ".gitignore",
+            }
+        else:
+            files = {
+                name: name for name in ("loop.json", "experiment.py", "AGENTS.md", ".gitignore")
+            }
+        for source_name, destination in files.items():
+            source = templates.joinpath(source_name)
+            target = root / destination
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(source.read_bytes())
     except Exception:
         shutil.rmtree(root)
         raise
-    return {"ok": True, "workspace": str(root), "next": "review loop.json, then run --execute"}
+    return {
+        "ok": True,
+        "workspace": str(root),
+        "mode": "competition" if competition else "demo",
+        "next": (
+            "Complete COMPETITION.md, then give AGENTS.md to your coding agent. "
+            "The first round needs your training script and evaluation protocol."
+            if competition
+            else "review loop.json, then run --execute"
+        ),
+    }
 
 
 def parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        description="Run bounded experiments with verifiable local evidence."
+        prog="medalloop",
+        description="Iterate on ML competition solutions: baseline, experiment, evaluate, ensemble.",
     )
     p.add_argument("--version", action="version", version=__version__)
     commands = p.add_subparsers(dest="command", required=True)
-    init = commands.add_parser("init", help="create a runnable offline demo workspace")
+    init = commands.add_parser("init", help="create a competition project or offline demo")
     init.add_argument("path", type=Path)
+    init.add_argument(
+        "--competition",
+        action="store_true",
+        help="create the agent workflow, competition brief, memory and first-round plan",
+    )
     for command, help_text in (
         ("plan", "validate configuration and show pending commands without executing"),
         ("run", "execute pending experiments with explicit consent"),
@@ -93,7 +126,7 @@ def _report(root: Path):
 
 def dispatch(args):
     if args.command == "init":
-        return initialize(args.path)
+        return initialize(args.path, competition=args.competition)
     if args.command == "check-submission":
         return check_submission(args.path, args.id_column, args.sample, args.rows, args.allow_text)
     if args.command == "blend":

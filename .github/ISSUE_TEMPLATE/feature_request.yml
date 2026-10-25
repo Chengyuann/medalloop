@@ -1,5 +1,5 @@
 name: Feature request
-description: Propose a focused improvement to the evidence or execution layer.
+description: Improve competition research, experiments, validation or ensembling.
 title: "[Feature] "
 labels: ["enhancement"]
 body:
@@ -14,7 +14,7 @@ body:
     id: proposal
     attributes:
       label: Smallest useful behavior
-      description: Keep model orchestration, remote writes and distributed scheduling out of scope.
+      description: Describe the competition workflow, expected benefit and authorization boundaries.
     validations:
       required: true
   - type: textarea

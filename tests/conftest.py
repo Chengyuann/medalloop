@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from evidence_loop.cli import initialize
+from medalloop.cli import initialize
 
 
 @pytest.fixture

@@ -1,5 +1,24 @@
 # Configuration and Output Contract
 
+## Training Script Interface
+
+Commands execute from the round directory. `{python}` resolves to the interpreter
+running MedalLoop; other arguments are passed literally, without a shell.
+
+| Environment variable | Meaning |
+| --- | --- |
+| `MEDALLOOP_RUN_DIR` | Absolute output directory for this attempt. |
+| `MEDALLOOP_TASK_ID` | The current task ID. |
+
+Write the configured metrics file and every declared artifact into that output
+directory. For competition work, useful artifacts include OOF predictions with
+row/fold IDs, test predictions, the resolved config, dataset/split hashes and
+dependency versions.
+
+The `EVIDENCE_LOOP_RUN_DIR` and `EVIDENCE_LOOP_TASK_ID` aliases and the existing
+`.evidence-loop.lock` filename are retained for v0.1 workspaces. The Python import
+name is now `medalloop`; update code importing the old package.
+
 ## Plan
 
 `loop.json` is strict JSON. Duplicate keys, non-finite JSON numbers and unknown

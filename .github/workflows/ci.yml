@@ -41,7 +41,10 @@ jobs:
       - run: python -m pip install build
       - run: python -m build
       - run: python -m pip install --no-deps dist/*.whl
-      - run: evidence-loop init /tmp/evidence-loop-demo
-      - run: evidence-loop plan --root /tmp/evidence-loop-demo
-      - run: evidence-loop run --root /tmp/evidence-loop-demo --execute
-      - run: evidence-loop verify --root /tmp/evidence-loop-demo
+      - run: medalloop init /tmp/medalloop-demo
+      - run: medalloop plan --root /tmp/medalloop-demo
+      - run: medalloop run --root /tmp/medalloop-demo --execute
+      - run: medalloop verify --root /tmp/medalloop-demo
+      - run: medalloop init /tmp/medalloop-competition --competition
+      - run: medalloop plan --root /tmp/medalloop-competition/rounds/001
+      - run: evidence-loop --version

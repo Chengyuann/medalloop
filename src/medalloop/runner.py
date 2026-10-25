@@ -81,7 +81,13 @@ def _terminate(process):
 
 def execute(command: tuple[str, ...], root: Path, run_dir: Path, task_id: str, timeout: float):
     argv = [sys.executable if arg == "{python}" else arg for arg in command]
-    env = dict(os.environ, EVIDENCE_LOOP_RUN_DIR=str(run_dir), EVIDENCE_LOOP_TASK_ID=task_id)
+    env = dict(
+        os.environ,
+        MEDALLOOP_RUN_DIR=str(run_dir),
+        MEDALLOOP_TASK_ID=task_id,
+        EVIDENCE_LOOP_RUN_DIR=str(run_dir),
+        EVIDENCE_LOOP_TASK_ID=task_id,
+    )
     with (run_dir / "stdout.log").open("wb") as out, (run_dir / "stderr.log").open("wb") as err:
         process = subprocess.Popen(
             argv,

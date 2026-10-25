@@ -3,7 +3,7 @@ import math
 
 import pytest
 
-from evidence_loop.config import LoopError, contained, load_config, number, read_json, relative_path
+from medalloop.config import LoopError, contained, load_config, number, read_json, relative_path
 
 
 def test_demo_valid(workspace):

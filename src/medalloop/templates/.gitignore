@@ -1,0 +1,11 @@
+**/runs/
+**/ledger.sqlite3*
+**/.evidence-loop.lock
+**/data/
+**/submissions/
+**/checkpoints/
+**/weights/
+.env
+.env.*
+*.log
+__pycache__/

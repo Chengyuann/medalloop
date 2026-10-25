@@ -1,38 +1,30 @@
 # Launch Copy
 
-Draft copy for maintainer-led sharing. These are not automated posts or
-performance claims.
+## English
 
-## Short Introduction
+I built MedalLoop, an open-source Agent iteration framework for machine-learning
+competitions.
 
-I built Evidence Loop because an agent saying "the experiment worked" is not
-enough.
+It gives a coding agent a persistent workflow for understanding the rules,
+building a trustworthy baseline, selecting hypotheses from error analysis, running
+controlled CV experiments, preserving OOF/prediction artifacts, testing ensembles,
+validating submissions, and carrying leaderboard feedback into the next round.
 
-It is a small, local Python CLI that runs reviewed experiment plans, checks
-metrics against a fixed evaluation protocol, saves artifact hashes, preserves
-failed attempts, and stops when its budget or patience runs out.
+The framework does not promise a medal or ship a universal winning model.
+Its purpose is to make multi-day competition research less random and more
+reproducible.
 
-No API key, cloud service, or runtime dependencies. The included offline example
-runs on synthetic data and demonstrates keep/reject decisions, stopping, and
-restart-safe behavior.
+Repository: https://github.com/Chengyuann/medalloop
 
-Repository: https://github.com/Chengyuann/evidence-loop
+## 中文
 
-I would appreciate feedback on the output contract and real workflows where
-experiment tracking or recovery currently breaks.
+我开源了 MedalLoop，一个面向机器学习竞赛提分的 Agent 迭代框架。
 
-## 中文介绍
+它让代码 Agent 持续完成：理解赛题、建立可信 CV 基线、维护提分假设池、
+控制变量做实验、保存 OOF/预测产物、分析失败、做互补模型融合、
+检查提交文件，以及把官方榜单反馈带入下一轮。
 
-我开源了 Evidence Loop，一个给代码 Agent 和研究者使用的轻量实验闭环工具。
+它不是一键夺冠模型，也不保证奖牌。它解决的是竞赛周期长、实验多、
+容易失忆和重复试错的问题，让 Agent 的提分过程更系统、更可复现。
 
-它解决的问题很具体：Agent 说“实验成功了”，不应该只剩一句话。
-每次尝试都要有运行记录、指标、产物和可复核的文件哈希；
-失败要保留，重试要明确，没有改善要停下来。
-
-纯本地 Python CLI，运行时零第三方依赖，无需 API Key。
-仓库提供可以直接跑通的合成数据示例，也支持接入已有实验脚本。
-
-这不是自主夺冠系统，也不是安全沙箱。欢迎反馈实验恢复、指标校验
-和 Agent 接入过程中真正遇到的问题。
-
-仓库：https://github.com/Chengyuann/evidence-loop
+仓库：https://github.com/Chengyuann/medalloop

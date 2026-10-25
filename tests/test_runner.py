@@ -5,9 +5,9 @@ import sys
 
 import pytest
 
-from evidence_loop.config import LoopError, load_config
-from evidence_loop.runner import audit_evidence, run, status
-from evidence_loop.store import Store, workspace_lock
+from medalloop.config import LoopError, load_config
+from medalloop.runner import audit_evidence, run, status
+from medalloop.store import Store, workspace_lock
 
 
 def task(
@@ -15,7 +15,7 @@ def task(
 ):
     code = (
         "import os,json;from pathlib import Path;"
-        "p=Path(os.environ['EVIDENCE_LOOP_RUN_DIR']);"
+        "p=Path(os.environ['MEDALLOOP_RUN_DIR']);"
         f"(p/'metrics.json').write_text(json.dumps({{'metric':{{'name':{metric!r},"
         f"'value':{score!r}}},'evaluation_id':{evaluation!r}}}));{extra}"
     )
@@ -157,7 +157,7 @@ def test_total_wall_budget(workspace, configure):
 def test_workspace_lock_is_exclusive(workspace):
     with workspace_lock(workspace):
         result = subprocess.run(
-            [sys.executable, "-m", "evidence_loop", "run", "--root", str(workspace), "--execute"],
+            [sys.executable, "-m", "medalloop", "run", "--root", str(workspace), "--execute"],
             capture_output=True,
             text=True,
         )
@@ -177,7 +177,7 @@ def test_retry_does_not_bypass_attempt_budget(workspace, configure):
 def test_timeout_terminates_descendants(workspace, configure):
     code = (
         "import subprocess,sys,time,os;from pathlib import Path;"
-        "p=Path(os.environ['EVIDENCE_LOOP_RUN_DIR']);"
+        "p=Path(os.environ['MEDALLOOP_RUN_DIR']);"
         "subprocess.Popen([sys.executable,'-c',"
         "\"import time;from pathlib import Path;time.sleep(1);Path('leaked').touch()\"]);"
         "time.sleep(10)"
@@ -201,7 +201,7 @@ def test_provenance_contains_code_hash_not_environment(workspace):
 
 
 def test_nonfile_argv_does_not_fail_optional_provenance(workspace, configure, monkeypatch):
-    from evidence_loop import runner
+    from medalloop import runner
 
     original = runner.contained
 
@@ -217,3 +217,23 @@ def test_nonfile_argv_does_not_fail_optional_provenance(workspace, configure, mo
     )
     monkeypatch.setattr(runner, "contained", reject_inline_path)
     assert run(workspace)["ok"]
+
+
+def test_legacy_output_environment_is_preserved(workspace, configure):
+    job = task(
+        extra=(
+            "assert os.environ['EVIDENCE_LOOP_RUN_DIR']==os.environ['MEDALLOOP_RUN_DIR'];"
+            "assert os.environ['EVIDENCE_LOOP_TASK_ID']==os.environ['MEDALLOOP_TASK_ID']"
+        )
+    )
+    job["command"][-1] = job["command"][-1].replace(
+        "p=Path(os.environ['MEDALLOOP_RUN_DIR'])",
+        "p=Path(os.environ['EVIDENCE_LOOP_RUN_DIR'])",
+    )
+    configure(
+        metric={"name": "score", "direction": "maximize"},
+        evaluation_id="test-v1",
+        tasks=[job],
+    )
+    assert run(workspace)["ok"]
+    assert (workspace / ".evidence-loop.lock").is_file()

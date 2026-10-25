@@ -2,8 +2,8 @@ import csv
 
 import pytest
 
-from evidence_loop.config import LoopError
-from evidence_loop.submission import blend, check_submission, ranks
+from medalloop.config import LoopError
+from medalloop.submission import blend, check_submission, ranks
 
 
 def put(tmp_path, name, text):

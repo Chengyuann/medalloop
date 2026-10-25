@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0 - 2026-10-25
+
+- Renamed the project and Python package to MedalLoop, focused on ML competition iteration.
+- Added `medalloop init --competition` with a complete competition Agent workflow,
+  task brief, campaign state, hypothesis backlog, CV/submission history and first-round plan.
+- Rewrote English and Chinese documentation around baseline, controlled experiments,
+  error analysis, OOF/ensembles, leaderboard feedback and next-round decisions.
+- Replaced generic artwork with a competition-specific cover and workflow diagram.
+- Kept the `evidence-loop` executable, legacy output environment variables and lock
+  filename for existing scripts and workspace compatibility.
+
 ## 0.1.0 - 2026-10-25
 
 First public release.

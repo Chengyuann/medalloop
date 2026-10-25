@@ -1,0 +1,6 @@
+include AGENTS.md CHANGELOG.md CONTRIBUTING.md README.zh-CN.md SECURITY.md
+recursive-include docs *.md *.png *.webp
+recursive-include tests *.py
+recursive-include tools *.py
+global-exclude *.py[cod]
+global-exclude .DS_Store

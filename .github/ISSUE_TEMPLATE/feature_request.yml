@@ -1,0 +1,24 @@
+name: Feature request
+description: Propose a focused improvement to the evidence or execution layer.
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What concrete workflow failure or limitation does this address?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Smallest useful behavior
+      description: Keep model orchestration, remote writes and distributed scheduling out of scope.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Reproduction or example
+      description: Prefer a synthetic example with an expected outcome.

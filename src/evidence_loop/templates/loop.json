@@ -1,0 +1,50 @@
+{
+  "name": "Synthetic regression: a complete offline loop",
+  "metric": {"name": "mse", "direction": "minimize"},
+  "evaluation_id": "synthetic-linear-v1-seed-42-holdout-80",
+  "budget": {
+    "max_steps": 8,
+    "max_failures": 2,
+    "patience": 2,
+    "min_delta": 0.0001,
+    "timeout": 30,
+    "max_wall_seconds": 120
+  },
+  "tasks": [
+    {
+      "id": "baseline",
+      "hypothesis": "A training-mean predictor establishes the reference error.",
+      "command": ["{python}", "experiment.py", "--model", "mean"],
+      "metrics": "metrics.json",
+      "artifacts": ["predictions.csv"]
+    },
+    {
+      "id": "linear",
+      "hypothesis": "A linear fit should capture the synthetic generating relationship.",
+      "command": ["{python}", "experiment.py", "--model", "linear"],
+      "metrics": "metrics.json",
+      "artifacts": ["predictions.csv"]
+    },
+    {
+      "id": "shifted",
+      "hypothesis": "A fixed intercept adjustment tests whether the fit is biased.",
+      "command": ["{python}", "experiment.py", "--model", "shifted"],
+      "metrics": "metrics.json",
+      "artifacts": ["predictions.csv"]
+    },
+    {
+      "id": "repeat",
+      "hypothesis": "Repeating the fixed seed should reproduce the linear result.",
+      "command": ["{python}", "experiment.py", "--model", "linear"],
+      "metrics": "metrics.json",
+      "artifacts": ["predictions.csv"]
+    },
+    {
+      "id": "not-run",
+      "hypothesis": "The patience budget should stop before this redundant trial.",
+      "command": ["{python}", "experiment.py", "--model", "linear"],
+      "metrics": "metrics.json",
+      "artifacts": ["predictions.csv"]
+    }
+  ]
+}
